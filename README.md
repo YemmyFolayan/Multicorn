@@ -56,10 +56,7 @@ Mohan Kumar B Chandrashekar, Rohit Menon, Samuel Olowofila, Oluwatosin Oluwadare
 ---
 
 ## 👨‍💻 Contributors
-- M. B. Chandrashekar
-- R. Menon
-- S. Olowofila
-- O. Oluwadare
+Anonymous
 
 ---
 
