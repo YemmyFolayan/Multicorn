@@ -1,0 +1,52 @@
+device: "cuda"
+seed: 42
+num_workers: 4
+
+model:
+  name: "Multicorn"
+  base_channels: 64
+  latent_dim: 64
+  iterations: 5
+  tile_size: 40
+  modalities:
+    atac: true
+    chip: true
+    rna: true
+
+objective:
+  loss_form: "L1"
+  beta: 0.01
+  gamma: 0.1
+  distance_decay_d0: 10.0
+  conflict_percentile: 0.25
+
+training:
+  batch_size: 64
+  epochs: 50
+  learning_rate: 0.0003
+  optimizer: "Adam"
+  adam_betas: [0.9, 0.999]
+  adam_eps: 1.0e-8
+  checkpoint_dir: "checkpoint/"
+  save_path: "checkpoint/multicorn_model.pytorch"
+
+data:
+  num_bins: 200
+  resolution: "500kb"
+  hic_input: "../ScUnicorn/data/mouse_test_data/chr11_500kb.txt"
+  atac_track: "../ScUnicorn/data/mouse_test_data/GSE160472_ATAC_Seq.txt"
+  chip_track: "../ScUnicorn/data/mouse_test_data/GSE269897_CHIP_Seq.txt"
+  rna_track: "../ScUnicorn/data/mouse_test_data/GSE287905_RNA_Seq.txt"
+
+evaluation:
+  metrics:
+    - "Pearson"
+    - "Spearman"
+    - "MSE"
+    - "SSIM"
+    - "PSNR"
+
+inference:
+  iterations: 5
+  output_image: "output/enhanced_chr11.png"
+  output_hic: "output/enhanced_chr11.txt"

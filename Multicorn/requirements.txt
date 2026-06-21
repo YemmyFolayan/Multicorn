@@ -1,0 +1,9 @@
+torch>=1.12
+numpy
+pandas
+scipy
+scikit-image
+matplotlib
+pillow
+pyyaml
+tqdm
