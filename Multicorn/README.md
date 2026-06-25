@@ -16,7 +16,7 @@ reconstruction.
 
 ## Architecture
 
-![Multicorn architecture](Multicorn/assets/multicorn_architecture.png)
+![Multicorn architecture](\assets\multicorn_architecture.png)
 
 The framework has four stages:
 
