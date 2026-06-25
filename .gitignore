@@ -27,6 +27,12 @@ output/
 *.jpg
 *.jpeg
 
+# Keep documentation images committed (needed for README rendering)
+!**/assets/
+!**/assets/*.png
+!**/assets/*.jpg
+!**/assets/*.jpeg
+
 # --------------------------------
 # Large Dataset Files
 # --------------------------------
