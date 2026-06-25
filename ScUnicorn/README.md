@@ -149,6 +149,8 @@ The `output/output.txt` file generated from the **Generating HR Maps** step can 
 
 To run multimodal: SCUnicorn > Cd > scripts
 
+MacOS
+
 python3 generate_multimodal_hr.py \
 --model_path ../checkpoint/scunicorn_model.pytorch \
 --data_path ../data/mouse_test_data/chr3_100kb.txt \
@@ -157,6 +159,18 @@ python3 generate_multimodal_hr.py \
 --rna_data_path ../data/mouse_test_data/GSE287905_RNA_Seq.txt \
 --output_image_path ../output/output.png \
 --output_hic_path ../output/output.txt
+
+Windows OS
+
+python3 generate_multimodal_hr.py `
+--model_path ../checkpoint/scunicorn_model.pytorch `
+--data_path ../data/mouse_test_data/chr3_100kb.txt `
+--atac_data_path ../data/mouse_test_data/GSE160472_ATAC_Seq.txt `
+--chip_data_path ../data/mouse_test_data/GSE269897_CHIP_Seq.txt `
+--rna_data_path ../data/mouse_test_data/GSE287905_RNA_Seq.txt `
+--output_image_path ../output/output.png `
+--output_hic_path ../output/output.txt
+
 
 
 To run docker
