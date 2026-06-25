@@ -20,6 +20,7 @@ A multimodal fusion layer encodes each 1D omics signal into a latent representat
 
 ---
 
+
 ## Architecture
 
 ![Multicorn architecture](Multicorn/assets/multicorn_architecture.png)
