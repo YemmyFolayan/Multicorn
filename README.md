@@ -27,37 +27,7 @@ A multimodal fusion layer encodes each 1D omics signal into a latent representat
 
 Multicorn extends the ScUnicorn blind super-resolution backbone with three additions over the unimodal baseline: independent encoders for the regulatory tracks, a fusion injection that conditions restoration on the regulatory context, and a biologically constrained objective. The Deep Alternating Network (DAN) backbone is shared.
 
-The pipeline has four stages:
 
-1. **Inputs and encoders.** The scHi-C contact map is encoded by a 2D CNN into a feature map `F_HiC`. The three regulatory tracks are each encoded by an independent two-layer MLP (hidden widths `128, 64`) into 64-dimensional latents. Modality-specific encoders are a deliberate inductive bias because contact frequencies, read counts, and FPKM values have very different dynamic ranges and noise structures.
-2. **Multimodal fusion.** The three latents are concatenated into the regulatory context `z_multi = [z_a ‖ z_c ‖ z_r] ∈ R^192`. A learned projection `φ` broadcasts it onto the Hi-C features: `F_cond = F_HiC + φ(z_multi)`. Concatenation over averaging preserves modality identity.
-3. **Alternating restoration loop (N = 5).** An **Estimator** refines the degradation kernel `T` and a biologically constrained **Restorer** reconstructs the HR map under the regulatory prior. `z_multi` is reinjected at every iteration.
-4. **Output.** A degradation tail checks low-resolution consistency and an image tail emits the enhanced HR map `H*`, which feeds 3DUnicorn for 3D reconstruction.
-
-### Biologically constrained objective
-
-Multicorn augments the base blind super-resolution objective with an explicit biological consistency term:
-
-```
-J_Multi(H, T, O) = ||L − T(H)||²  +  β · P(H)  +  γ · B(H, O)
-```
-
-- `||L − T(H)||²` — degradation-consistency data term (trained in `L1` form).
-- `P(H)` — sparsity/smoothness prior on the reconstructed map.
-- `B(H, O)` — biological consistency term over the normalized omics tracks `O = (a, c, r)`.
-
-The constraint penalizes intensity placed between bins that are simultaneously inaccessible, unmarked, and silent:
-
-```
-s(i, O)        = mean( z(a_i), z(c_i), z(r_i) )
-conflict(i, j) = [ s(i) < τ ]  and  [ s(j) < τ ]
-B(H, O)        = Σ_ij  w_ij · H_ij · conflict(i, j)
-w_ij           = 1 / (1 + |i − j| / d0)
-```
-
-`τ` is the lower 25th percentile of `s` across the chromosome and the genomic-distance weight `w_ij` (with `d0 = 10` bins) prevents long-range, low-intensity contacts from dominating. `B` is a **soft** prior: the data term can still drive `H_ij > 0` in heterochromatin when the data demands it, but at a `γ · w_ij · H_ij` cost. We use `γ = 0.1`.
-
----
 
 ## Installation
 
