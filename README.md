@@ -22,7 +22,7 @@ A multimodal fusion layer encodes each 1D omics signal into a latent representat
 
 ## Architecture
 
-![Multicorn architecture](Multicorn/assets/multicorn_architecture.svg)
+![Multicorn architecture](Multicorn/assets/multicorn_architecture.png)
 
 Multicorn extends the ScUnicorn blind super-resolution backbone with three additions over the unimodal baseline: independent encoders for the regulatory tracks, a fusion injection that conditions restoration on the regulatory context, and a biologically constrained objective. The Deep Alternating Network (DAN) backbone is shared.
 
