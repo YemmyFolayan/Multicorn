@@ -10,9 +10,9 @@ The 3D organization of chromatin governs gene regulation, cellular identity, and
 
 Multicorn addresses this gap by integrating three orthogonal functional-genomics modalities:
 
-- **ATAC-seq** — chromatin accessibility
-- **ChIP-seq H3K27ac** — active enhancers
-- **RNA-seq** — transcriptional output
+- **ATAC-seq**: chromatin accessibility
+- **ChIP-seq H3K27ac**: active enhancers
+- **RNA-seq**: transcriptional output
 
 A multimodal fusion layer encodes each 1D omics signal into a latent representation that conditions a deep alternating optimization loop, and a biologically constrained loss penalizes contacts that contradict the local regulatory landscape. Downstream 3D reconstructions generated from Multicorn-enhanced contact maps show improved agreement with orthogonal 3D-FISH measurements.
 
@@ -93,7 +93,7 @@ Multicorn uses matched mouse Islet-cell inputs on mouse chromosome 11 at 500 kb 
 
 ```
 Unicorn-Hi-C/
-├── Multicorn/     # Multimodal (ATAC + ChIP + RNA) enhancement — primary framework
+├── Multicorn/     # Multimodal (ATAC + ChIP + RNA) enhancement, primary framework
 ├── ScUnicorn/     # Unimodal blind super-resolution backbone Multicorn extends
 └── 3DUnicorn/     # 3D genome structure reconstruction from enhanced maps
 ```
@@ -108,18 +108,5 @@ See [`Multicorn/README.md`](Multicorn/README.md) for the full Multicorn document
 
 ---
 
-## Citation
-
-This work builds on Unicorn:
-
-> Unicorn: enhancing single-cell Hi-C data with blind super-resolution for 3D genome structure reconstruction. Bioinformatics, Volume 41, Issue Supplement_1, July 2025, Pages i475–i483, https://doi.org/10.1093/bioinformatics/btaf177
-
----
-
-## 👨‍💻 Contributors
-Anonymous
-
----
-
-## 📜 License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.

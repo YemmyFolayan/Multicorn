@@ -1,7 +1,6 @@
 """
 ScUnicorn Model Definition
 Deep learning framework for Hi-C super-resolution with optional multi-modal data integration.
-Author: Michael Iluyemi Folayan
 """
 
 import torch

@@ -14,14 +14,14 @@ This page walks you through getting **Unicorn-Hi-C** (the Multicorn / ScUnicorn 
 Clone the repository locally and move into the project directory:
 
 ```bash
-git clone https://github.com/OluwadareLab/Unicorn-Hi-C.git && cd Unicorn-Hi-C
+git clone <ANONYMIZED_REPO_URL> && cd Unicorn-Hi-C
 ```
 
 The repository is organized into three components:
 
 ```
 Unicorn-Hi-C/
-├── Multicorn/     # Multimodal (ATAC + ChIP + RNA) enhancement — primary framework
+├── Multicorn/     # Multimodal (ATAC + ChIP + RNA) enhancement, primary framework
 ├── ScUnicorn/     # Unimodal blind super-resolution backbone Multicorn extends
 └── 3DUnicorn/     # 3D genome structure reconstruction from enhanced maps
 ```
@@ -35,7 +35,7 @@ Unicorn-Hi-C/
 Pull the Unicorn Docker image from Docker Hub:
 
 ```bash
-docker pull oluwadarelab/unicorn:latest
+docker pull unicorn:latest
 ```
 
 This may take a few minutes depending on your connection.
@@ -48,7 +48,7 @@ Once the pull finishes, confirm the image is available:
 docker image ls
 ```
 
-You should see `oluwadarelab/unicorn` listed in the output.
+You should see `unicorn` listed in the output.
 
 ### 2.3 Run the container
 
@@ -57,19 +57,19 @@ Start the container and mount your current working directory into it so the cont
 **Linux / macOS (bash):**
 
 ```bash
-docker run --rm --gpus all -it --name unicorn -v ${PWD}:${PWD} -w ${PWD} oluwadarelab/unicorn
+docker run --rm --gpus all -it --name unicorn -v ${PWD}:${PWD} -w ${PWD} unicorn
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-docker run --rm --gpus all -it --name unicorn -v ${PWD}:${PWD} -w ${PWD} oluwadarelab/unicorn
+docker run --rm --gpus all -it --name unicorn -v ${PWD}:${PWD} -w ${PWD} unicorn
 ```
 
 **Windows (Command Prompt):**
 
 ```bat
-docker run --rm --gpus all -it --name unicorn -v %cd%:%cd% -w %cd% oluwadarelab/unicorn
+docker run --rm --gpus all -it --name unicorn -v %cd%:%cd% -w %cd% unicorn
 ```
 
 What the flags do:
@@ -114,9 +114,9 @@ Each component (`Multicorn/`, `ScUnicorn/`, `3DUnicorn/`) ships its own `require
 
 With the environment ready, follow the component guides to run the pipeline:
 
-1. **[Multicorn](https://github.com/OluwadareLab/Unicorn-Hi-C/tree/main/Multicorn)** — multimodal scHi-C enhancement (primary framework)
-2. **[ScUnicorn](https://github.com/OluwadareLab/Unicorn-Hi-C/tree/main/ScUnicorn)** — unimodal blind super-resolution backbone
-3. **[3DUnicorn](https://github.com/OluwadareLab/Unicorn-Hi-C/tree/main/3DUnicorn)** — 3D genome structure reconstruction from enhanced maps
+1. **Multicorn** (`Multicorn/`): multimodal scHi-C enhancement (primary framework)
+2. **ScUnicorn** (`ScUnicorn/`): unimodal blind super-resolution backbone
+3. **3DUnicorn** (`3DUnicorn/`): 3D genome structure reconstruction from enhanced maps
 
 The end-to-end flow is: raw scHi-C → **Multicorn** enhancement → **3DUnicorn** 3D reconstruction.
 
@@ -124,7 +124,7 @@ The end-to-end flow is: raw scHi-C → **Multicorn** enhancement → **3DUnicorn
 
 ## Troubleshooting
 
-- **`docker: command not found`** — Docker is not installed or not on your `PATH`. Install Docker and restart your terminal.
-- **`could not select device driver "" with capabilities: [[gpu]]`** — The NVIDIA Container Toolkit is missing or `--gpus all` was used without a GPU. Install the toolkit, or remove `--gpus all` to run on CPU.
-- **Permission denied on the mounted volume (Linux)** — Run Docker with the appropriate user, or adjust ownership of the mounted directory on the host.
-- **Slow image pull or timeouts** — Retry `docker pull`; partial layers are cached and resumed.
+- **`docker: command not found`**: Docker is not installed or not on your `PATH`. Install Docker and restart your terminal.
+- **`could not select device driver "" with capabilities: [[gpu]]`**: The NVIDIA Container Toolkit is missing or `--gpus all` was used without a GPU. Install the toolkit, or remove `--gpus all` to run on CPU.
+- **Permission denied on the mounted volume (Linux)**: Run Docker with the appropriate user, or adjust ownership of the mounted directory on the host.
+- **Slow image pull or timeouts**: Retry `docker pull`; partial layers are cached and resumed.

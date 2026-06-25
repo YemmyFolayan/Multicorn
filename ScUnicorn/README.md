@@ -1,14 +1,14 @@
 ## 1. Important Notice
 
-Due to GitHub’s file size limitations, the `train.npz`, `valid.npz`, and `test.npz` files could not be uploaded to the repository.  
-You can **download them from Zenodo** using the following link:
+Due to GitHub's file size limitations, the `train.npz`, `valid.npz`, and `test.npz` files could not be uploaded to the repository.  
+You can **download them from the anonymized data link** provided with this submission:
 
-[Download ScUnicorn Dataset](https://zenodo.org/uploads/15079331?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImRkYzI5MmQwLTdmYWQtNGIwNi04YWIzLWU4ZmViYzMxNmNlOSIsImRhdGEiOnt9LCJyYW5kb20iOiJlMmI0NmNhYjliNWY5ZjA2N2I5ZThkN2EwMDgzODk3ZCJ9.Ql-dXIRmoFgjZXe4Psw3G-mv_uAmM8bqLrfKhNC92PdoLPgCKEIKaRob73gZrYcNV7hW9Bc3XF_pk6ml8fL22A)
+[Download ScUnicorn Dataset](<ANONYMIZED_DATA_URL>)
 
 You can also download the dataset using `wget`:
 
 ```bash
-wget https://zenodo.org/uploads/15079331?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImRkYzI5MmQwLTdmYWQtNGIwNi04YWIzLWU4ZmViYzMxNmNlOSIsImRhdGEiOnt9LCJyYW5kb20iOiJlMmI0NmNhYjliNWY5ZjA2N2I5ZThkN2EwMDgzODk3ZCJ9.Ql-dXIRmoFgjZXe4Psw3G-mv_uAmM8bqLrfKhNC92PdoLPgCKEIKaRob73gZrYcNV7hW9Bc3XF_pk6ml8fL22A
+wget <ANONYMIZED_DATA_URL>
 ```
 
 ### 1.0 Navigate to the ScUnicorn Directory
@@ -174,7 +174,7 @@ python3 generate_multimodal_hr.py `
 
 
 To run docker
-docker run --rm -it --name scunicorn -v ${PWD}:${PWD} oluwadarelab/unicorn
+docker run --rm -it --name scunicorn -v ${PWD}:${PWD} unicorn
 
 To run 3D unicorn
 

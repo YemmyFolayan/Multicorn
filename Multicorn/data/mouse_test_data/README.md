@@ -7,7 +7,7 @@ scripts and the default config.
 
 | Signal | File | GEO accession |
 | --- | --- | --- |
-| scHi-C contact map | `chr11_500kb.txt` | — |
+| scHi-C contact map | `chr11_500kb.txt` | n/a |
 | ATAC-seq (accessibility) | `GSE160472_ATAC_Seq.txt` | GSE160472 |
 | H3K27ac ChIP-seq (active enhancers) | `GSE269897_CHIP_Seq.txt` | GSE269897 |
 | RNA-seq (expression) | `GSE287905_RNA_Seq.txt` | GSE287905 |
