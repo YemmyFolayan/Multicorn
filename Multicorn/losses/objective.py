@@ -2,7 +2,7 @@
 
 Augments the base blind super-resolution objective with the regulatory prior:
 
-    J_Multi(H, T, O) = ||L - T(H)||^2 + beta * P(H) + gamma * B(H, O)
+    J_Multi(H, T, O) = ||L - T(H)||_1 + beta * P(H) + gamma * B(H, O)
 
 The data term measures degradation consistency, ``P(H)`` is a sparsity/smoothness
 prior on the reconstructed map, and ``B(H, O)`` is the biological consistency
@@ -52,7 +52,8 @@ class MulticornObjective(nn.Module):
         smoothness = total_variation(restored)
 
         biology = restored.new_zeros(())
-        if atac is not None and chip is not None and rna is not None:
+        # Apply the biological penalty only when some track is present.
+        if any(track is not None for track in (atac, chip, rna)):
             biology = biological_constraint(
                 restored, atac, chip, rna, d0=self.d0, percentile=self.percentile
             )

@@ -76,11 +76,19 @@ pip install -r requirements.txt
 
 ## Data
 
-Multicorn reuses the matched mouse Islet-cell inputs shipped with `ScUnicorn`
-(mouse chromosome 11 at 500 kb resolution). See
-[`data/mouse_test_data/README.md`](data/mouse_test_data/README.md) for the file
-list and GEO accessions (ATAC-seq `GSE160472`, H3K27ac ChIP-seq `GSE269897`,
+Primary benchmarking uses mouse embryonic stem cell (mESC) scHi-C on chromosome
+11 at 500 kb, with chromosome 3 held out for domain and 3D checks. FISH
+comparisons use mouse chromosomes 3 and 11. The three regulatory tracks are
+cell-type-level reference profiles, not nucleus-matched multiome from the same
+cells. See [`data/mouse_test_data/README.md`](data/mouse_test_data/README.md)
+for the released files (ATAC-seq `GSE160472`, H3K27ac ChIP-seq `GSE269897`,
 RNA-seq `GSE287905`).
+
+Human frontal cortex training and the *D. melanogaster* chr2L test use the same
+three-track layout (ATAC-seq, H3K27ac, RNA-seq), binned to that run's Hi-C grid.
+Those tracks are species-specific reference profiles. Pass them with the same
+`--atac_data`, `--chip_data`, and `--rna_data` flags; they are not part of the
+mouse sample folder.
 
 ---
 
@@ -123,10 +131,41 @@ python train.py \
   --epochs 50 --batch_size 64 --lr 0.0003 --gamma 0.1 --iterations 5
 ```
 
-Omitting the three omics arguments trains the unimodal fallback (equivalent to
-`γ = 0`).
+Omitting all three omics arguments trains the unimodal fallback (`γ = 0` and
+no fusion). Omitting one track, or passing `--drop_atac`, `--drop_chip`, or
+`--drop_rna`, retrains a leave-one-out model. `--track_dropout 0.1` randomly
+drops one present track so a missing track can be handled at test time.
+`--early_fusion` trains Baseline A: the same tracks as extra input channels and
+`γ = 0`, without the fusion layer.
 
-### 3. Inference over a tile dataset
+### 3. Shared evaluation
+
+```bash
+cd scripts
+python evaluate.py --self_check
+python evaluate.py --prediction restored.npz --target hr.npz
+```
+
+`evaluate.py` is the shared scorer for every method: upper-triangle Pearson and
+Spearman, per-tile MSE and PSNR (peak = HR tile maximum), SSIM with a 7×7
+window, GenomeDISCO, and DeDoc2 insulation L2. With track `.npy` files it also
+reports distance bands, A/B compartment Pearson, and the inactive–inactive rate
+used for the high-resolution row of the annotation table.
+
+### 4. Variability controls and compute cost
+
+```bash
+python variability_controls.py --self_check
+python compute_cost.py
+```
+
+`variability_controls.py` compares pairwise similarity of raw, enhanced, and
+high-resolution cells, then reruns with the scHi-C input zeroed, swapped across
+cells, or bin-shuffled, and with the tracks shuffled. `compute_cost.py` prints
+parameter counts and per-cell time. Counts for 100, 1,000, and 10,000 cells are
+linear extrapolations of that measurement.
+
+### 5. Inference over a tile dataset
 
 ```bash
 cd scripts/training
@@ -137,7 +176,7 @@ python infer.py \
   --output ../../output/
 ```
 
-### 4. 3D reconstruction
+### 6. 3D reconstruction
 
 The enhanced matrix is consumed by **3DUnicorn**. Point its multimodal pipeline
 at the Multicorn output:

@@ -23,6 +23,8 @@ objective:
 training:
   batch_size: 64
   epochs: 50
+  track_dropout: 0.0
+  early_fusion: false
   learning_rate: 0.0003
   optimizer: "Adam"
   adam_betas: [0.9, 0.999]
@@ -31,6 +33,11 @@ training:
   save_path: "checkpoint/multicorn_model.pytorch"
 
 data:
+  cell_type: "mESC"
+  chromosome: "chr11"
+  fish_chromosomes: ["chr3", "chr11"]
+  # Tracks here are cell type reference profiles not nucleus matched.
+  track_scope: "cell-type-level reference, not nucleus-matched"
   num_bins: 200
   resolution: "500kb"
   hic_input: "../ScUnicorn/data/mouse_test_data/chr11_500kb.txt"
@@ -45,6 +52,13 @@ evaluation:
     - "MSE"
     - "SSIM"
     - "PSNR"
+    - "GenomeDisco"
+    - "DeDoc2"
+  correlation: "upper_triangle"
+  ssim_window: 7
+  psnr_peak: "hr_tile_maximum"
+  dedoc2_window: 5
+  distance_band_bins: [5, 20]
 
 inference:
   iterations: 5

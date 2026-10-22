@@ -12,6 +12,23 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 
+def omit_tracks(
+    atac: Optional[torch.Tensor], chip: Optional[torch.Tensor], rna: Optional[torch.Tensor],
+    drop_atac: bool = False, drop_chip: bool = False, drop_rna: bool = False,
+    dropout_p: float = 0.0, training: bool = False,
+) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+    """Return the tracks this step should actually condition on."""
+    # Drop named tracks or else one random track during training.
+    tracks = [atac, chip, rna]
+    flags = (drop_atac, drop_chip, drop_rna)
+    tracks = [None if drop else track for track, drop in zip(tracks, flags)]
+    if training and dropout_p > 0.0 and any(track is not None for track in tracks):
+        if float(torch.rand(())) < dropout_p:
+            alive = [index for index, track in enumerate(tracks) if track is not None]
+            tracks[alive[int(torch.randint(0, len(alive), (1,)))]] = None
+    return tracks[0], tracks[1], tracks[2]
+
+
 class HiCTileDataset(Dataset):
     """Tile dataset that optionally yields aligned regulatory tracks.
 

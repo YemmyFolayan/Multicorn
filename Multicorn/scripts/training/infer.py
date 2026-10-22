@@ -16,9 +16,10 @@ PACKAGE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 if PACKAGE_ROOT not in sys.path:
     sys.path.insert(0, PACKAGE_ROOT)
 
+from models.early_fusion import EarlyFusionBaseline
 from models.multicorn import Multicorn
-from utils.data_loader import build_loader
-from utils.preprocessing import load_regulatory_tracks
+from utils.data_loader import build_loader, omit_tracks
+from utils.preprocessing import load_atac_track, load_chip_track, load_rna_track
 
 
 def reconstruct_matrices(tiles: np.ndarray, indices: np.ndarray,
@@ -45,18 +46,32 @@ def run_inference(args) -> None:
     print(f"Using device: {device}")
 
     atac = chip = rna = None
-    if args.atac_data and args.chip_data and args.rna_data:
-        atac, chip, rna = load_regulatory_tracks(args.atac_data, args.chip_data, args.rna_data, args.num_bins)
+    paths = (args.atac_data, args.chip_data, args.rna_data)
+    if any(paths):
+        zeros = np.zeros(args.num_bins, dtype=np.float32)
+        loaders = (load_atac_track, load_chip_track, load_rna_track)
+        flags = ("drop_atac", "drop_chip", "drop_rna")
+        loaded = []
+        for path, loader, flag in zip(paths, loaders, flags):
+            if path:
+                loaded.append(loader(path, args.num_bins))
+            else:
+                setattr(args, flag, True)
+                loaded.append(zeros)
+        atac, chip, rna = loaded
 
     loader, dataset = build_loader(
         args.input, batch_size=args.batch_size, shuffle=False,
         atac=atac, chip=chip, rna=rna, tile_size=args.tile_size,
     )
 
-    model = Multicorn(
-        atac_dim=args.tile_size, chip_dim=args.tile_size, rna_dim=args.tile_size,
-        iterations=args.iterations,
-    ).to(device)
+    if args.early_fusion:
+        model = EarlyFusionBaseline(iterations=args.iterations).to(device)
+    else:
+        model = Multicorn(
+            atac_dim=args.tile_size, chip_dim=args.tile_size, rna_dim=args.tile_size,
+            iterations=args.iterations,
+        ).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
     print(f"Loaded model from {args.checkpoint}")
@@ -66,7 +81,11 @@ def run_inference(args) -> None:
         for batch in tqdm(loader, desc="Predicting"):
             if dataset.multimodal:
                 lr, _, atac_b, chip_b, rna_b = batch
-                restored = model(lr.to(device), atac_b.to(device), chip_b.to(device), rna_b.to(device))
+                atac_b, chip_b, rna_b = omit_tracks(
+                    atac_b.to(device), chip_b.to(device), rna_b.to(device),
+                    args.drop_atac, args.drop_chip, args.drop_rna,
+                )
+                restored = model(lr.to(device), atac_b, chip_b, rna_b)
             else:
                 lr = batch[0]
                 restored = model(lr.to(device))
@@ -102,6 +121,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--iterations", type=int, default=5)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--cuda", type=int, default=-1)
+    parser.add_argument("--drop_atac", action="store_true")
+    parser.add_argument("--drop_chip", action="store_true")
+    parser.add_argument("--drop_rna", action="store_true")
+    parser.add_argument("--early_fusion", action="store_true")
     return parser.parse_args()
 
 

@@ -16,7 +16,7 @@ from dominating the term. ``B`` is a soft prior: the data term can still drive
 a ``gamma * w_{ij} * H_{ij}`` cost.
 """
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 
@@ -28,10 +28,14 @@ def _zscore(track: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     return (track - mean) / (std + eps)
 
 
-def bin_regulatory_score(atac: torch.Tensor, chip: torch.Tensor,
-                         rna: torch.Tensor) -> torch.Tensor:
-    """Mean of the z-normalized regulatory tracks at each genomic bin."""
-    return (_zscore(atac) + _zscore(chip) + _zscore(rna)) / 3.0
+def bin_regulatory_score(atac: Optional[torch.Tensor], chip: Optional[torch.Tensor],
+                         rna: Optional[torch.Tensor]) -> torch.Tensor:
+    """Mean of the z-normalized tracks that are present at each bin."""
+    # Average only the tracks that are actually present for scoring.
+    parts = [_zscore(track) for track in (atac, chip, rna) if track is not None]
+    if not parts:
+        raise ValueError("At least one regulatory track is required.")
+    return torch.stack(parts, dim=0).mean(dim=0)
 
 
 def conflict_mask(scores: torch.Tensor, percentile: float = 0.25) -> torch.Tensor:
@@ -53,8 +57,17 @@ def distance_weights(n: int, d0: float, device: torch.device) -> torch.Tensor:
     return 1.0 / (1.0 + separation / d0)
 
 
-def biological_constraint(hic: torch.Tensor, atac: torch.Tensor,
-                          chip: torch.Tensor, rna: torch.Tensor,
+def _batch_track(track: Optional[torch.Tensor], batch_size: int,
+                 num_bins: int) -> Optional[torch.Tensor]:
+    if track is None:
+        return None
+    if track.dim() == 1:
+        return track.expand(batch_size, num_bins)
+    return track
+
+
+def biological_constraint(hic: torch.Tensor, atac: Optional[torch.Tensor],
+                          chip: Optional[torch.Tensor], rna: Optional[torch.Tensor],
                           d0: float = 10.0, percentile: float = 0.25) -> torch.Tensor:
     """Evaluate ``B(H, O)`` for a batch of contact maps.
 
@@ -72,15 +85,19 @@ def biological_constraint(hic: torch.Tensor, atac: torch.Tensor,
     maps = hic.squeeze(1) if hic.dim() == 4 else hic
     batch_size, n, _ = maps.shape
 
-    atac_b = atac.expand(batch_size, n) if atac.dim() == 1 else atac
-    chip_b = chip.expand(batch_size, n) if chip.dim() == 1 else chip
-    rna_b = rna.expand(batch_size, n) if rna.dim() == 1 else rna
+    atac_b = _batch_track(atac, batch_size, n)
+    chip_b = _batch_track(chip, batch_size, n)
+    rna_b = _batch_track(rna, batch_size, n)
 
     weights = distance_weights(n, d0, maps.device)
 
     penalties = []
     for b in range(batch_size):
-        scores = bin_regulatory_score(atac_b[b], chip_b[b], rna_b[b])
+        scores = bin_regulatory_score(
+            None if atac_b is None else atac_b[b],
+            None if chip_b is None else chip_b[b],
+            None if rna_b is None else rna_b[b],
+        )
         mask = conflict_mask(scores, percentile).float()
         penalties.append((weights * maps[b].abs() * mask).sum())
 

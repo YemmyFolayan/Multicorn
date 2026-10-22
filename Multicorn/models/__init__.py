@@ -6,6 +6,7 @@ from models.modality_encoders import ModalityEncoder, RegulatoryEncoders
 from models.fusion import MultimodalFusion
 from models.restoration_loop import Estimator, Restorer, RestorationLoop
 from models.multicorn import Multicorn
+from models.early_fusion import EarlyFusionBaseline
 
 __all__ = [
     "DegradationKernel",
@@ -17,4 +18,5 @@ __all__ = [
     "Restorer",
     "RestorationLoop",
     "Multicorn",
+    "EarlyFusionBaseline",
 ]

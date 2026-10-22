@@ -45,10 +45,18 @@ class Multicorn(nn.Module):
             latent_dim=latent_dim,
         )
 
-    def encode_context(self, atac: torch.Tensor, chip: torch.Tensor,
-                       rna: torch.Tensor) -> torch.Tensor:
-        """Encode the three regulatory tracks into ``z_multi``."""
-        z_atac, z_chip, z_rna = self.encoders(atac, chip, rna)
+    def encode_context(self, atac: Optional[torch.Tensor], chip: Optional[torch.Tensor],
+                       rna: Optional[torch.Tensor]) -> torch.Tensor:
+        """Encode whichever regulatory tracks are present into ``z_multi``."""
+        # A missing track adds a zero latent, not encoder bias.
+        reference = next(track for track in (atac, chip, rna) if track is not None)
+        zeros = torch.zeros(
+            reference.shape[0], self.encoders.latent_dim,
+            device=reference.device, dtype=reference.dtype,
+        )
+        z_atac = self.encoders.atac(atac) if atac is not None else zeros
+        z_chip = self.encoders.chip(chip) if chip is not None else zeros
+        z_rna = self.encoders.rna(rna) if rna is not None else zeros
         return self.loop.restorer.fusion.build_context(z_atac, z_chip, z_rna)
 
     def forward(self, lr_hic: torch.Tensor,
@@ -56,7 +64,7 @@ class Multicorn(nn.Module):
                 chip: Optional[torch.Tensor] = None,
                 rna: Optional[torch.Tensor] = None) -> torch.Tensor:
         z_multi = None
-        if atac is not None and chip is not None and rna is not None:
+        if any(track is not None for track in (atac, chip, rna)):
             z_multi = self.encode_context(atac, chip, rna)
         return self.loop(lr_hic, z_multi)
 

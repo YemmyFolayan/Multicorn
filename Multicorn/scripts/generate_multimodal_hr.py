@@ -1,6 +1,6 @@
 """Generate an enhanced high-resolution scHi-C map with Multicorn.
 
-Loads a dense low-resolution contact map together with matched ATAC-seq,
+Loads a dense low-resolution contact map together with cell-type-level ATAC-seq,
 H3K27ac ChIP-seq and RNA-seq tracks, runs the multimodal blind super-resolution
 model, and writes both an enhanced contact matrix (for 3DUnicorn) and a heatmap
 image.

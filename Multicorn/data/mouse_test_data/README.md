@@ -1,7 +1,10 @@
 # Mouse Test Data (mouse chromosome 11, 500 kb)
 
-Multicorn reuses the same matched mouse Islet-cell inputs shipped with
-`ScUnicorn`. To avoid duplicating large files, the sample data lives in
+The contact map is mESC scHi-C for mouse chromosome 11 at 500 kb. The three
+regulatory files are cell-type-level reference tracks from the GEO accessions
+below, not profiles from the same nuclei as the Hi-C library. Multicorn reuses
+the files shipped with `ScUnicorn`. To avoid duplicating large files, the sample
+data lives in
 `../../../ScUnicorn/data/mouse_test_data/` and is referenced from there by the
 scripts and the default config.
 

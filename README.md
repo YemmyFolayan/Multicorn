@@ -85,7 +85,7 @@ python main_multimodal.py --parameters ../examples/parameters.txt
 
 ## Data
 
-Multicorn uses matched mouse Islet-cell inputs on mouse chromosome 11 at 500 kb resolution. The omics tracks are obtained from NCBI GEO: ATAC-seq (`GSE160472`), H3K27ac ChIP-seq (`GSE269897`), and RNA-seq (`GSE287905`). See [`Multicorn/data/mouse_test_data/README.md`](Multicorn/data/mouse_test_data/README.md) for details.
+Primary results use mESC scHi-C on mouse chromosome 11 at 500 kb. Chromosome 3 is held out, and FISH checks use mouse chromosomes 3 and 11. The omics tracks are cell-type-level reference profiles, not nucleus-matched multiome: ATAC-seq (`GSE160472`), H3K27ac ChIP-seq (`GSE269897`), and RNA-seq (`GSE287905`). Human frontal cortex and *D. melanogaster* chr2L runs use the same three-track layout as species-specific reference profiles. See [`Multicorn/data/mouse_test_data/README.md`](Multicorn/data/mouse_test_data/README.md) and [`Multicorn/README.md`](Multicorn/README.md) for the shared evaluation, variability-control, and compute-cost scripts.
 
 ---
 

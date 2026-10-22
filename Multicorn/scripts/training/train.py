@@ -20,15 +20,27 @@ if PACKAGE_ROOT not in sys.path:
     sys.path.insert(0, PACKAGE_ROOT)
 
 from losses.objective import MulticornObjective
+from models.early_fusion import EarlyFusionBaseline
 from models.multicorn import Multicorn
-from utils.data_loader import build_loader
-from utils.preprocessing import load_regulatory_tracks
+from utils.data_loader import build_loader, omit_tracks
+from utils.preprocessing import load_atac_track, load_chip_track, load_rna_track
 
 
 def _load_tracks(args, num_bins):
-    if not (args.atac_data and args.chip_data and args.rna_data):
+    """Load whichever tracks were provided and mark the others for omission."""
+    paths = (args.atac_data, args.chip_data, args.rna_data)
+    if not any(paths):
         return None, None, None
-    return load_regulatory_tracks(args.atac_data, args.chip_data, args.rna_data, num_bins)
+    loaders = (load_atac_track, load_chip_track, load_rna_track)
+    zeros = np.zeros(num_bins, dtype=np.float32)
+    loaded = []
+    for path, loader, flag in zip(paths, loaders, ("drop_atac", "drop_chip", "drop_rna")):
+        if path:
+            loaded.append(loader(path, num_bins))
+        else:
+            setattr(args, flag, True)
+            loaded.append(zeros)
+    return loaded[0], loaded[1], loaded[2]
 
 
 def train(args) -> None:
@@ -43,12 +55,18 @@ def train(args) -> None:
     )
 
     multimodal = atac is not None
-    model = Multicorn(
-        atac_dim=args.tile_size,
-        chip_dim=args.tile_size,
-        rna_dim=args.tile_size,
-        iterations=args.iterations,
-    ).to(device)
+    if args.early_fusion and not multimodal:
+        raise ValueError("The early-fusion baseline needs at least one regulatory track.")
+    if args.early_fusion:
+        model = EarlyFusionBaseline(iterations=args.iterations).to(device)
+        args.gamma = 0.0
+    else:
+        model = Multicorn(
+            atac_dim=args.tile_size,
+            chip_dim=args.tile_size,
+            rna_dim=args.tile_size,
+            iterations=args.iterations,
+        ).to(device)
 
     objective = MulticornObjective(beta=args.beta, gamma=args.gamma).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr,
@@ -62,6 +80,10 @@ def train(args) -> None:
             if multimodal:
                 lr, hr, atac_b, chip_b, rna_b = batch
                 atac_b, chip_b, rna_b = atac_b.to(device), chip_b.to(device), rna_b.to(device)
+                atac_b, chip_b, rna_b = omit_tracks(
+                    atac_b, chip_b, rna_b, args.drop_atac, args.drop_chip, args.drop_rna,
+                    dropout_p=args.track_dropout, training=True,
+                )
             else:
                 lr, hr = batch
                 atac_b = chip_b = rna_b = None
@@ -69,7 +91,8 @@ def train(args) -> None:
             lr, hr = lr.to(device), hr.to(device)
             optimizer.zero_grad()
             restored = model(lr, atac_b, chip_b, rna_b)
-            losses = objective(restored, hr, atac_b, chip_b, rna_b)
+            loss_tracks = (None, None, None) if args.early_fusion else (atac_b, chip_b, rna_b)
+            losses = objective(restored, hr, *loss_tracks)
             losses["total"].backward()
             optimizer.step()
             running += losses["total"].item()
@@ -95,6 +118,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lr", type=float, default=0.0003)
     parser.add_argument("--beta", type=float, default=0.01)
     parser.add_argument("--gamma", type=float, default=0.1)
+    parser.add_argument("--drop_atac", action="store_true", help="Train without the ATAC-seq track")
+    parser.add_argument("--drop_chip", action="store_true", help="Train without the H3K27ac track")
+    parser.add_argument("--drop_rna", action="store_true", help="Train without the RNA-seq track")
+    parser.add_argument("--track_dropout", type=float, default=0.0,
+                        help="Chance of dropping one present track each batch")
+    parser.add_argument("--early_fusion", action="store_true",
+                        help="Baseline A: tracks as extra channels and gamma 0")
     parser.add_argument("--save_path", default="../../checkpoint/multicorn_model.pytorch")
     return parser.parse_args()
 
